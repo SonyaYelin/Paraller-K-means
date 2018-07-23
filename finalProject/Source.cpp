@@ -2,17 +2,17 @@
 
 int main(int argc, char* argv[])
 {
-	double				start, QM, dT,T, q = DBL_MAX, LIMIT,t;
-	int					N, K, remainder, n = 0;
-	point_t				*points = NULL;
-	cluster_t			*clusters = NULL;
+	double start, QM, dT,T, q = DBL_MAX, LIMIT,t;
+	int N, K, remainder, n = 0;
+	point_t *points = NULL;
+	cluster_t *clusters = NULL;
 	
 	//mpi 
-	int					numprocs, myid, partSize;
-	MPI_Comm			comm = MPI_COMM_WORLD;
-	MPI_Status			status;
-	MPI_Datatype		MPI_POINT;
-	MPI_Datatype		MPI_CLUSTER;
+	int numprocs, myid, partSize;
+	MPI_Comm comm = MPI_COMM_WORLD;
+	MPI_Status status;
+	MPI_Datatype MPI_POINT;
+	MPI_Datatyp MPI_CLUSTER;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myid);

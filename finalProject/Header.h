@@ -13,27 +13,27 @@
 #include <omp.h>
 
 
-#define MASTER						0
-#define MAX_OMP					8
-#define CUDA_BLOCK_SIZE		1024
-#define CUDA_PART					10000
-#define INPUT_FILE_NAME		"data.txt"
-#define OUTPUT_FILE_NAME		"outPut.txt"
+#define MASTER 0
+#define MAX_OMP 8
+#define CUDA_BLOCK_SIZE 1024
+#define CUDA_PART 10000
+#define INPUT_FILE_NAME "data.txt"
+#define OUTPUT_FILE_NAME "outPut.txt"
 
 
 struct point_t
 {
-	double	x, y; 
-	double	vX, vY; 
-	int		cluster; 
+	double x, y; 
+	double vX, vY; 
+	int cluster; 
 
 }typedef point_t;
 
 struct Cluster
 {
-	double	x, y;
-	double	sumX, sumY;
-	int		numOfPoints;
+	double x, y;
+	double sumX, sumY;
+	int numOfPoints;
 
 }typedef cluster_t;
 
@@ -70,75 +70,3 @@ void getQ(int myid, double *q, point_t *points, int N, int K, int numprocs, clus
 void findDiameters(point_t *points, int N, double *diameters, int K);
 
 double getDistance(double x1, double x2, double y1, double y2);
-
-
-// ------------------------ backup ------------------------
-//void movePoints(int partSize, double dT, point_t *points);
-
-//void findAllDistances(point_t *points, int N, double *diameters, int K, double *distances);
-
-//void movePoints(int partSize, double dT, point_t *points)
-//{
-//	int i;
-//	double newX, newY;
-//
-//	omp_set_num_threads(60); // 60 is the max number
-//
-//#pragma omp parallel for num_threads(60)
-//	for (i = 0; i < partSize; i++)
-//	{
-//		points[i].x += points[i].vX*dT;
-//		points[i].y += points[i].vY*dT;
-//	}
-//}
-
-//void findAllDistances(point_t *points, int N, double *diameters, int K, double *distances)
-//{
-//	double		dist = 0;
-//	int			cluster, i, j;
-//
-//	omp_set_num_threads(MAX_OMP);
-//
-//	// find for each point the distance of the farest point in the same cluster ---> O ( N * N / MAX_OMP) ?logn?
-//
-//#pragma omp parallel num_threads(MAX_OMP) private (i, j, cluster, dist)
-//	{
-//#pragma omp for 	
-//		for (i = 0; i < N - 1; i++)
-//		{
-//			cluster = points[i].cluster;
-//		
-//			for (j = i + 1 ; j < N; j++)
-//			{
-//				if (points[j].cluster == cluster) //if points of the same cluster
-//				{
-//					getDistance(&dist, points[i].x, points[j].x, points[i].y, points[j].y);
-//					if (dist > distances[i])
-//						distances[i] = dist;
-//				}
-//			}
-//		}
-//	}
-//}
-//void getDiameters(double *diameters, point_t *points, int N, int K)
-//{
-//	double		dist = 0;
-//	int			cluster, i, j;
-//
-//
-//	for (i = 0; i <N - 1; i++)
-//	{
-//		cluster = points[i].cluster;
-//
-//		for (j = i + 1; j < N; j++)
-//		{
-//			if (points[j].cluster == cluster) //if points of the same cluster
-//			{
-//				getDistance(&dist, points[i].x, points[j].x, points[i].y, points[j].y);
-//				if (dist > diameters[cluster])
-//					diameters[cluster] = dist;
-//			}
-//		}
-//	}
-//}
-

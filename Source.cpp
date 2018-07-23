@@ -2,17 +2,17 @@
 
 int main(int argc, char* argv[])
 {
-	double				start, QM, dT,T, q = DBL_MAX, LIMIT,t;
-	int					N, K, remainder, n = 0;
-	point_t				*points = NULL;
-	cluster_t			*clusters = NULL;
+	double start, QM, dT,T, q = DBL_MAX, LIMIT,t;
+	int N, K, remainder, n = 0;
+	point_t *points = NULL;
+	cluster_t *clusters = NULL;
 	
 	//mpi 
-	int					numprocs, myid, partSize;
-	MPI_Comm			comm = MPI_COMM_WORLD;
-	MPI_Status			status;
-	MPI_Datatype		MPI_POINT;
-	MPI_Datatype		MPI_CLUSTER;
+	int numprocs, myid, partSize;
+	MPI_Comm comm = MPI_COMM_WORLD;
+	MPI_Status status;
+	MPI_Datatype MPI_POINT;
+	MPI_Datatype MPI_CLUSTER;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
@@ -40,16 +40,16 @@ int main(int argc, char* argv[])
 	
 		//if its not first iteration we need to move the points
 		if (myid == MASTER && n > 0)
-			movePointsCuda(points + (numprocs - 1)*partSize, partSize + remainder , dT);	// ---> O( 1 ) because of cuda
+			movePointsCuda(points + (numprocs - 1)*partSize, partSize + remainder , dT);  //  O( 1 ) because of cuda
 
 		else if (n > 0) //slave 
-			movePointsCuda(points, partSize, dT);											// ---> O( 1 ) because of cuda									
+			movePointsCuda(points, partSize, dT);	 //  O( 1 ) because of cuda									
 
 		//movePoints(partSize, dT, points);							
 
 		kmeans(&t,myid, LIMIT, T, N, &q, QM, dT, K, numprocs, partSize, points, clusters, MPI_POINT, MPI_CLUSTER); 
 
-		getQ(myid, &q, points, N, K, numprocs, clusters);									// --->  O( N / CUDA_PART ) * O(K*K) 
+		getQ(myid, &q, points, N, K, numprocs, clusters);  //  O( N / CUDA_PART ) * O(K*K) 
 		n++;
 	} while ( (n*dT) < T && q > QM && n<3 );
 
@@ -67,13 +67,13 @@ int main(int argc, char* argv[])
 
 void kmeans(double *t,int myid, int LIMIT, int T, int N, double * q, double QM, double dT, int K, int numprocs, int partSize, point_t *points, cluster_t *clusters, MPI_Datatype MPI_POINT, MPI_Datatype MPI_CLUSTER)
 {
-	int				itr = 0;
-	int				remainder = N % numprocs;
-	int				flag_clusterChanged;	//flag == 1 if points moved between the clusters
-	cluster_t		*clustersFromSlave = (cluster_t*)calloc(K, sizeof(cluster_t));
-	MPI_Status		status;
-	MPI_Comm		comm = MPI_COMM_WORLD;
-	cudaError_t		cudaStatus;
+	int itr = 0;
+	int remainder = N % numprocs;
+	int flag_clusterChanged;	//flag == 1 if points moved between the clusters
+	cluster_t *clustersFromSlave = (cluster_t*)calloc(K, sizeof(cluster_t));
+	MPI_Status status;
+	MPI_Comm comm = MPI_COMM_WORLD;
+	cudaError_t cudaStatus;
 
 	// cluster points and update centroids to be the avarege
 	// iterate while points move between clusters && itr<LIMIT
@@ -84,7 +84,7 @@ void kmeans(double *t,int myid, int LIMIT, int T, int N, double * q, double QM, 
 
 		if (myid == MASTER)
 		{
-			clusterPoints(K, partSize + remainder, points + (numprocs - 1)*partSize, clusters, &flag_clusterChanged);	// ---> O( partSize / MAX_OMP )
+			clusterPoints(K, partSize + remainder, points + (numprocs - 1)*partSize, clusters, &flag_clusterChanged);	//  O( partSize / MAX_OMP )
 			recvUpdatesFromSlaves(K, numprocs, partSize, points, clusters, &flag_clusterChanged, MPI_POINT, MPI_CLUSTER);
 		}
 		else
@@ -121,7 +121,7 @@ void getQ(int myid, double *q, point_t *points, int N, int K, int numprocs, clus
 
 		*q = 0;
 		diameters = (double *)calloc(K, sizeof(double));
-		findDiameters(points, N, diameters, K);	// ---> O( N / CUDA_PART )
+		findDiameters(points, N, diameters, K);	//  O( N / CUDA_PART )
 		
 		// O(k*k)
 		for (i = 0; i < K; i++)
@@ -138,10 +138,10 @@ void getQ(int myid, double *q, point_t *points, int N, int K, int numprocs, clus
 		*q = *q / (K*(K - 1));
 
 		for (slave = 1; slave < numprocs; slave++)
-			MPI_Send(q, 1, MPI_DOUBLE, slave, 0, MPI_COMM_WORLD);	//send q to slaves
+			MPI_Send(q, 1, MPI_DOUBLE, slave, 0, MPI_COMM_WORLD); //send q to slaves
 	}
 	else //slaves
-		MPI_Recv(q, 1, MPI_DOUBLE, MASTER, 0, comm, &status);		//resv q from master
+		MPI_Recv(q, 1, MPI_DOUBLE, MASTER, 0, comm, &status);	 //resv q from master
 }
 
 void findDiameters(point_t *points, int N, double *diameters, int K)
@@ -218,7 +218,7 @@ void initClusters(cluster_t **clusters, point_t *points, int K)
 	int i;
 	*clusters = (cluster_t*)calloc(K, sizeof(cluster_t));
 
-	//init centroids with first k points and other data with 0 -> O(K)
+	//init centroids with first k points and other data with 0 - O(K)
 	for (i = 0; i < K; i++)
 	{
 		(*clusters)[i].x = points[i].x; 
@@ -253,7 +253,7 @@ void updateCentroids(int myid, cluster_t *clusters, int K, int numprocs, MPI_Dat
 	MPI_Comm	comm = MPI_COMM_WORLD;
 	MPI_Status	status;
 
-	//only master has all the clusters, he updates them and sends to slaves  ---> O( K )
+	//only master has all the clusters, he updates them and sends to slaves  - O( K )
 	if (myid == MASTER)
 	{
 		for (i = 0; i < K; i++)
